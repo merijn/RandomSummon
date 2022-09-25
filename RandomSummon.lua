@@ -1,9 +1,8 @@
 local AddonName = ...
 
 local Addon = CreateFrame("Frame", AddonName)
-
+local petSlotCache = {}
 local petId = nil
-local petSlot = nil
 
 local origCallCompanion = CallCompanion
 CallCompanion = function(companionType, slotId)
@@ -12,7 +11,7 @@ CallCompanion = function(companionType, slotId)
 
     if companionType == "CRITTER" then
         petId = creatureID
-        petSlot = slotId
+        petSlotCache[creatureID] = slotId
         print("Summoning: ", creatureName)
     end
 
@@ -23,7 +22,6 @@ local origDismissCompanion = DismissCompanion
 DismissCompanion = function(companionType)
     if companionType == "CRITTER" then
         petId = nil
-        petSlot = nil
         print("Dismissing pet!")
     end
 
@@ -34,18 +32,37 @@ local function SummonRandom()
     CallCompanion("CRITTER", random(GetNumCompanions("CRITTER")))
 end
 
-local function CheckPetActive()
+local function CheckActivePet()
     if petId then
-        local creatureID, creatureName, creatureSpellID,
-            icon, issummoned, mountType = GetCompanionInfo("CRITTER", petSlot)
-        if creatureID == petId then
-            print("Still same slot for", petId, "and active is", issummoned)
+        local creatureID, creatureName, creatureSpellID, icon, issummoned,
+              mountType = GetCompanionInfo("CRITTER", petSlotCache[petId])
+
+        if creatureID == petId and issummoned then
+            print("Still same slot for", creatureName, "and active")
             return true
-        else
-            print("Slot changed for", petId)
         end
     end
-    return false
+
+    local activeFound = false
+    local oldPetId = petId
+    petId = nil
+    for i=1,GetNumCompanions("CRITTER") do
+        local creatureID, creatureName, creatureSpellID,
+            icon, issummoned, mountType = GetCompanionInfo("CRITTER", i)
+
+        petSlotCache[creatureID] = i
+
+        if issummoned then
+            activeFound = true
+            petId = creatureID
+            if oldPetId == creatureID then
+                print("Slot changed for", creatureName)
+            else
+                print("Active pet changed to", creatureName)
+            end
+        end
+    end
+    return activeFound
 end
 
 local function CheckBusy()
@@ -76,16 +93,22 @@ local function EnsureRandomCompanion()
         print("Busy channeling!")
     elseif activity == "GCD" then
         print("Busy GCD!")
-    else
-        if not CheckPetActive() then
-            SummonRandom()
-        end
+    elseif not CheckActivePet() then
+        SummonRandom()
     end
 end
 
 local function RandomSummon_OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         print("Entering world:", select(1, ...), select(2, ...))
+
+        local active = CheckActivePet()
+
+        if select(1, ...) or select(2, ...) then
+            -- Initialisation
+        end
+
+        EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata
         print("Companions updated:", event)
@@ -93,9 +116,7 @@ local function RandomSummon_OnEvent(self, event, ...)
         DismissCompanion("CRITTER")
     elseif event == "COMPANION_UPDATE" then
         if select(1, ...) == "CRITTER" then
-            print("Critter update!")
-        else
-            -- No op
+            CheckActivePet()
         end
     elseif event == "PLAYER_MOUNT_DISPLAY_CHANGED" then
         if not IsMounted() then
