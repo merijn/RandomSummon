@@ -1,0 +1,18 @@
+## Interface: 30400
+## X-Min-Interface: 90207
+## X-Min-Interface-Classic: 11403
+## X-Min-Interface-BCC: 20504
+## X-Min-Interface-Wrath: 30400
+
+## Title:RandomSummon
+## Notes:
+## Dependencies:
+## OptionalDependencies: 
+## SavedVariables: 
+## SavedVariablesPerCharacter: 
+## LoadOnDemand: 0
+## DefaultState: enabled
+## Author: Merijn Verstraaten
+## Version: 1
+
+RandomSummon.lua
