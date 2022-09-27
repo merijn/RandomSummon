@@ -84,7 +84,7 @@ local function CheckBusy()
 end
 
 local function EnsureRandomCompanion()
-    if IsStealthed() or IsMounted() or InCombatLockdown() then
+    if IsStealthed() or IsMounted() or InCombatLockdown() or UnitIsDeadOrGhost("player") then
         -- Don't break stealth, dismount, or trigger GCD in combat
         return
     end
