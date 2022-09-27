@@ -29,7 +29,10 @@ DismissCompanion = function(companionType)
 end
 
 local function SummonRandom()
-    CallCompanion("CRITTER", random(GetNumCompanions("CRITTER")))
+    local num = GetNumCompanions("CRITTER")
+    if num > 0 then
+        CallCompanion("CRITTER", random(num))
+    end
 end
 
 local function CheckActivePet()
