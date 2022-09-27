@@ -125,6 +125,8 @@ local function RandomSummon_OnEvent(self, event, ...)
         if not IsMounted() then
             C_Timer.After(0.12, function() EnsureRandomCompanion() end)
         end
+    elseif event == "UPDATE_SHAPESHIFT_FORM" then
+        print(event, ...)
     else
         EnsureRandomCompanion()
     end
@@ -138,3 +140,8 @@ Addon:RegisterEvent("UPDATE_STEALTH")
 Addon:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
 Addon:RegisterEvent("PLAYER_REGEN_ENABLED")
 Addon:RegisterEvent("COMPANION_UPDATE")
+_, playerClass, _ = UnitClass("player")
+if playerClass == "DRUID" then
+    Addon:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+    Addon:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
+end
