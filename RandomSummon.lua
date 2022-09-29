@@ -200,19 +200,19 @@ function RandomSummonMount()
     end
 end
 
-local macroFlyable = ""
-local macroUnflyable = ""
+local macroFlyable = "#showtooltip\n/cast [swimming] Aquatic Form; [flyable,nocombat] !Swift Flight Form; !Travel Form"
+local macroUnflyable = "#showtooltip\n/cast [swimming] Aquatic Form; !Travel Form"
 local function UpdateDruidMacro()
     if not GetMacroInfo("RandomSummonForm") then
         if CanFly() then
-            CreateMacro("RandomSummonForm", 1, macroFlyable)
+            CreateMacro("RandomSummonForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
         else
-            CreateMacro("RandomSummonForm", 1, macroUnflyable)
+            CreateMacro("RandomSummonForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
         end
     elseif CanFly() then
-        EditMacro("RandomSummonForm", 1, macroFlyable)
+        EditMacro("RandomSummonForm", "RandomSummonForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
     else
-        EditMacro("RandomSummonForm", 1, macroUnflyable)
+        EditMacro("RandomSummonForm", "RandomSummonForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
     end
 end
 
@@ -225,7 +225,8 @@ local function RandomSummon_OnEvent(self, event, ...)
             CheckMounts()
         end
 
-        if not InCombatLockdown() then
+        _, playerClass, _ = UnitClass("player")
+        if playerClass == "DRUID" and not InCombatLockdown() then
             UpdateDruidMacro()
         end
         EnsureRandomCompanion()
