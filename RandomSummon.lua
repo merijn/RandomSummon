@@ -240,6 +240,8 @@ function RandomSummonMount()
     if IsMounted() then
         DismissCompanion("MOUNT")
         return
+    elseif InCombatLockdown() then
+        return
     end
 
     name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
