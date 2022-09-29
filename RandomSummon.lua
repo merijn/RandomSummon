@@ -11,7 +11,7 @@ local mounts = {}
 local origCallCompanion = CallCompanion
 CallCompanion = function(companionType, slotId)
     local creatureID, creatureName, creatureSpellID,
-          icon, issummoned, mountType = GetCompanionInfo(companionType, slotId)
+          icon, issummoned = GetCompanionInfo(companionType, slotId)
 
     if companionType == "CRITTER" then
         petId = creatureID
@@ -45,13 +45,13 @@ local function CallSpecific(companionType, creatureId)
     end
 
     local creatureID, creatureName, creatureSpellID,
-          icon, issummoned, mountType = GetCompanionInfo(companionType, slotId)
+          icon, issummoned = GetCompanionInfo(companionType, slotId)
 
     local found = false
     if creatureID ~= creatureId then
         for i=1, GetNumCompanions(companionType) do
             creatureID, creatureName, creatureSpellID,
-                icon, issummoned, mountType = GetCompanionInfo(companionType, i)
+                icon, issummoned = GetCompanionInfo(companionType, i)
 
             if companionType == "CRITTER" then
                 petSlotCache[creatureID] = i
@@ -82,8 +82,8 @@ end
 
 local function CheckActivePet()
     if petId then
-        local creatureID, creatureName, creatureSpellID, icon, issummoned,
-              mountType = GetCompanionInfo("CRITTER", petSlotCache[petId])
+        local creatureID, creatureName, creatureSpellID, icon, issummoned
+              = GetCompanionInfo("CRITTER", petSlotCache[petId])
 
         if creatureID == petId and issummoned then
             print("Still same slot for", creatureName, "and active")
@@ -96,7 +96,7 @@ local function CheckActivePet()
     petId = nil
     for i=1,GetNumCompanions("CRITTER") do
         local creatureID, creatureName, creatureSpellID,
-            icon, issummoned, mountType = GetCompanionInfo("CRITTER", i)
+            icon, issummoned = GetCompanionInfo("CRITTER", i)
 
         petSlotCache[creatureID] = i
 
@@ -157,7 +157,7 @@ local function CheckMounts()
 
     for i=1,GetNumCompanions("MOUNT") do
         local creatureID, creatureName, creatureSpellID,
-            icon, issummoned, mountType = GetCompanionInfo("MOUNT", i)
+            icon, issummoned = GetCompanionInfo("MOUNT", i)
 
         mountSlotCache[creatureID] = i
 
