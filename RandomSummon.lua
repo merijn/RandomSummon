@@ -47,8 +47,8 @@ local function CallSpecific(companionType, creatureId)
     local creatureID, creatureName, creatureSpellID,
           icon, issummoned = GetCompanionInfo(companionType, slotId)
 
-    local found = false
     if creatureID ~= creatureId then
+        slotId = -1
         for i=1, GetNumCompanions(companionType) do
             creatureID, creatureName, creatureSpellID,
                 icon, issummoned = GetCompanionInfo(companionType, i)
@@ -60,14 +60,14 @@ local function CallSpecific(companionType, creatureId)
             end
 
             if creatureID == creatureId then
-                found = true
+                slotId = i
                 break
             end
         end
-    end
 
-    if not found then
-        error("CallSpecific received unknown creature id")
+        if slotId == -1 then
+            error("CallSpecific received unknown creature id")
+        end
     end
 
     origCallCompanion(companionType, slotId)
