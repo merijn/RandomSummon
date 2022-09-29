@@ -203,10 +203,24 @@ function RandomSummonMount()
     end
 end
 
+local macroFlyable = ""
+local macroUnflyable = ""
+local function UpdateDruidMacro()
+    if not GetMacroInfo("RandomSummonForm") then
+        if CanFly() then
+            CreateMacro("RandomSummonForm", 1, macroFlyable)
+        else
+            CreateMacro("RandomSummonForm", 1, macroUnflyable)
+        end
+    elseif CanFly() then
+        EditMacro("RandomSummonForm", 1, macroFlyable)
+    else
+        EditMacro("RandomSummonForm", 1, macroUnflyable)
+    end
+end
+
 local function RandomSummon_OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
-        print("Entering world:", select(1, ...), select(2, ...))
-
         local active = CheckActivePet()
 
         if select(1, ...) or select(2, ...) then
@@ -214,6 +228,9 @@ local function RandomSummon_OnEvent(self, event, ...)
             CheckMounts()
         end
 
+        if not InCombatLockdown() then
+            UpdateDruidMacro()
+        end
         EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata
