@@ -73,6 +73,8 @@ local function CheckBusy()
         return "CASTING"
     elseif UnitChannelInfo("player") then
         return "CHANNELING"
+    elseif IsFalling() then
+        return "FALLING"
     end
 
     local start, duration, enabled, modRate = GetSpellCooldown(61304)
