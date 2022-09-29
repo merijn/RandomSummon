@@ -147,10 +147,10 @@ end
 
 local function CheckMounts()
     mounts = {
-        fly={size=0},
-        swim={size=0},
-        ground={size=0},
-        ahnqiraj={size=0}
+        fly={size=0, regular={size=0}, fast={size=0}},
+        swim={size=0, regular={size=0}, fast={size=0}},
+        ground={size=0, regular={size=0}, fast={size=0}},
+        ahnqiraj={size=0, regular={size=0}, fast={size=0}}
     }
 
     for i=1,GetNumCompanions("MOUNT") do
@@ -164,22 +164,28 @@ local function CheckMounts()
             local desc = spell:GetSpellDescription()
 
             local flying = string.find(desc, "This mount can only be summoned in Outland or Northrend.")
-            local epic = string.find(desc, "This is a very fast mount.")
+            local fast = string.find(desc, "This is a very fast mount.")
             local swimming = string.find(desc, "This mount can't move very quickly on land, but she's a great swimmer.")
             local qiraj = string.find(desc, "Temple of Ahn'Qiraj")
 
+            local mountCollection
             if qiraj then
-                mounts.ahnqiraj.size = mounts.ahnqiraj.size + 1
-                table.insert(mounts.ahnqiraj, creatureID)
+                mountCollection = mounts.ahnqiraj
             elseif swimming then
-                mounts.swim.size = mounts.swim.size + 1
-                table.insert(mounts.swim, creatureID)
+                mountCollection = mounts.swim
             elseif flying then
-                mounts.fly.size = mounts.fly.size + 1
-                table.insert(mounts.fly, creatureID)
+                mountCollection = mounts.fly
             else
-                mounts.ground.size = mounts.ground.size + 1
-                table.insert(mounts.ground, creatureID)
+                mountCollection = mounts.ground
+            end
+
+            mountCollection.size = mountCollection.size + 1
+            if fast then
+                mountCollection.fast.size = mountCollection.fast.size + 1
+                table.insert(mountCollection.fast, creatureID)
+            else
+                mountCollection.regular.size = mountCollection.regular.size + 1
+                table.insert(mountCollection.regular, creatureID)
             end
         end)
     end
@@ -199,6 +205,37 @@ local function CanFly()
     return false
 end
 
+function RandomSummonMountType(mountType, speed)
+    local mountCollection
+    if mountType == "GROUND" then
+        mountCollection = mounts.ground
+    elseif mountType == "FLY" then
+        mountCollection = mounts.fly
+    elseif mountType == "QIRAJI" then
+        mountCollection = mounts.ahnqiraj
+    elseif mountType == "SWIM" then
+        mountCollection = mounts.swim
+    else
+        error("Unsupported mount type!")
+    end
+
+    if speed == "ANY" and mountCollection.size > 0 then
+        num = random(mountCollection.size)
+        if num <= mountCollection.regular.size then
+            CallSpecific("MOUNT", mountCollection.regular[num])
+        else
+            num = num - mountCollection.regular.size
+            CallSpecific("MOUNT", mountCollection.fast[num])
+        end
+    elseif speed == "FAST" and mountCollection.fast.size > 0 then
+        num = random(mountCollection.fast.size)
+        CallSpecific("MOUNT", mountCollection.fast[num])
+    elseif mountCollection.regular.size > 0 then
+        num = random(mountCollection.regular.size)
+        CallSpecific("MOUNT", mountCollection.regular[num])
+    end
+end
+
 function RandomSummonMount()
     if IsMounted() then
         DismissCompanion("MOUNT")
@@ -206,14 +243,14 @@ function RandomSummonMount()
     end
 
     name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
-    if instanceID == 509 or instanceID == 531 then
-        CallSpecific("MOUNT", mounts.ahnqiraj[random(mounts.ahnqiraj)])
+    if instanceID == 509 or instanceID == 531 and mounts.ahnqiraj.size > 0 then
+        RandomSummonMountType("QIRAJI", "FAST")
     elseif (IsSwimming() or IsSubmerged()) and mounts.swim.size > 0 then
-        CallSpecific("MOUNT", mounts.swim[random(mounts.swim.size)])
+        RandomSummonMountType("SWIM", "FAST")
     elseif CanFly() and mounts.fly.size > 0 then
-        CallSpecific("MOUNT", mounts.fly[random(mounts.fly.size)])
+        RandomSummonMountType("FLY", "FAST")
     else
-        CallSpecific("MOUNT", mounts.ground[random(mounts.ground.size)])
+        RandomSummonMountType("GROUND", "FAST")
     end
 end
 
