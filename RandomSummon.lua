@@ -1,6 +1,7 @@
 local AddonName = ...
 
 local Addon = CreateFrame("Frame", AddonName)
+
 local petSlotCache = {}
 local petId = nil
 
@@ -13,6 +14,10 @@ CallCompanion = function(companionType, slotId)
         petId = creatureID
         petSlotCache[creatureID] = slotId
         print("Summoning: ", creatureName)
+    elseif companionType == "MOUNT" then
+        mountSlotCache[creatureID] = slotId
+    else
+        error("CallCompanion received unknown companion type")
     end
 
     origCallCompanion(companionType, slotId)
@@ -20,12 +25,49 @@ end
 
 local origDismissCompanion = DismissCompanion
 DismissCompanion = function(companionType)
-    if companionType == "CRITTER" then
-        petId = nil
-        print("Dismissing pet!")
-    end
+    if companionType == "CRITTER" then petId = nil end
 
     origDismissCompanion(companionType)
+end
+
+local function CallSpecific(companionType, creatureId)
+    local slotId = -1
+    if companionType == "CRITTER" then
+        petId = creatureId
+        slotId = petSlotCache[creatureId]
+    elseif companionType == "MOUNT" then
+        slotId = mountSlotCache[creatureId]
+    else
+        error("CallSpecific received unknown companion type")
+    end
+
+    local creatureID, creatureName, creatureSpellID,
+          icon, issummoned, mountType = GetCompanionInfo(companionType, slotId)
+
+    local found = false
+    if creatureID ~= creatureId then
+        for i=1, GetNumCompanions(companionType) do
+            creatureID, creatureName, creatureSpellID,
+                icon, issummoned, mountType = GetCompanionInfo(companionType, i)
+
+            if companionType == "CRITTER" then
+                petSlotCache[creatureID] = i
+            else
+                mountSlotCache[creatureID] = i
+            end
+
+            if creatureID == creatureId then
+                found = true
+                break
+            end
+        end
+    end
+
+    if not found then
+        error("CallSpecific received unknown creature id")
+    end
+
+    origCallCompanion(companionType, slotId)
 end
 
 local function SummonRandom()
