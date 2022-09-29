@@ -158,16 +158,25 @@ local function CheckMounts()
 
         mountSlotCache[creatureID] = i
 
-        if mountType == "flying" then
-            mounts.fly.size = mounts.fly.size + 1
-            table.insert(mounts.fly, creatureID)
-        elseif mountType == "swimming" then
-            mounts.swim.size = mounts.swim.size + 1
-            table.insert(mounts.swim, creatureID)
-        else
-            mounts.ground.size = mounts.ground.size + 1
-            table.insert(mounts.ground, creatureID)
-        end
+        local spell = Spell:CreateFromSpellID(creatureSpellID)
+        spell:ContinueOnSpellLoad(function()
+            local desc = spell:GetSpellDescription()
+
+            local flying = string.find(desc, "This mount can only be summoned in Outland or Northrend.")
+            local epic = string.find(desc, "This is a very fast mount.")
+            local swimming = string.find(desc, "This mount can't move very quickly on land, but she's a great swimmer.")
+
+            if swimming then
+                mounts.swim.size = mounts.swim.size + 1
+                table.insert(mounts.swim, creatureID)
+            elseif flying then
+                mounts.fly.size = mounts.fly.size + 1
+                table.insert(mounts.fly, creatureID)
+            else
+                mounts.ground.size = mounts.ground.size + 1
+                table.insert(mounts.ground, creatureID)
+            end
+        end)
     end
 end
 
