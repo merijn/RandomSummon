@@ -149,7 +149,8 @@ local function CheckMounts()
     mounts = {
         fly={size=0},
         swim={size=0},
-        ground={size=0}
+        ground={size=0},
+        ahnqiraj={size=0}
     }
 
     for i=1,GetNumCompanions("MOUNT") do
@@ -165,8 +166,12 @@ local function CheckMounts()
             local flying = string.find(desc, "This mount can only be summoned in Outland or Northrend.")
             local epic = string.find(desc, "This is a very fast mount.")
             local swimming = string.find(desc, "This mount can't move very quickly on land, but she's a great swimmer.")
+            local qiraj = string.find(desc, "Temple of Ahn'Qiraj")
 
-            if swimming then
+            if qiraj then
+                mounts.ahnqiraj.size = mounts.ahnqiraj.size + 1
+                table.insert(mounts.ahnqiraj, creatureID)
+            elseif swimming then
                 mounts.swim.size = mounts.swim.size + 1
                 table.insert(mounts.swim, creatureID)
             elseif flying then
@@ -200,7 +205,10 @@ function RandomSummonMount()
         return
     end
 
-    if (IsSwimming() or IsSubmerged()) and mounts.swim.size > 0 then
+    name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
+    if instanceID == 509 or instanceID == 531 then
+        CallSpecific("MOUNT", mounts.ahnqiraj[random(mounts.ahnqiraj)])
+    elseif (IsSwimming() or IsSubmerged()) and mounts.swim.size > 0 then
         CallSpecific("MOUNT", mounts.swim[random(mounts.swim.size)])
     elseif CanFly() and mounts.fly.size > 0 then
         CallSpecific("MOUNT", mounts.fly[random(mounts.fly.size)])
