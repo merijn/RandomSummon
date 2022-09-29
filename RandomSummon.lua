@@ -85,10 +85,7 @@ local function CheckActivePet()
         local creatureID, creatureName, creatureSpellID, icon, issummoned
               = GetCompanionInfo("CRITTER", petSlotCache[petId])
 
-        if creatureID == petId and issummoned then
-            print("Still same slot for", creatureName, "and active")
-            return true
-        end
+        if creatureID == petId and issummoned then return true end
     end
 
     local activeFound = false
