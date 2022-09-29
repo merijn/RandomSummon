@@ -141,6 +141,8 @@ Addon:RegisterEvent("COMPANION_UNLEARNED")
 Addon:RegisterEvent("UPDATE_STEALTH")
 Addon:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
 Addon:RegisterEvent("PLAYER_REGEN_ENABLED")
+Addon:RegisterEvent("PLAYER_ALIVE")
+Addon:RegisterEvent("PLAYER_UNGHOST")
 Addon:RegisterEvent("COMPANION_UPDATE")
 _, playerClass, _ = UnitClass("player")
 if playerClass == "DRUID" then
