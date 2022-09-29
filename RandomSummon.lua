@@ -5,6 +5,9 @@ local Addon = CreateFrame("Frame", AddonName)
 local petSlotCache = {}
 local petId = nil
 
+local mountSlotCache = {}
+local mounts = {}
+
 local origCallCompanion = CallCompanion
 CallCompanion = function(companionType, slotId)
     local creatureID, creatureName, creatureSpellID,
@@ -145,6 +148,61 @@ local function EnsureRandomCompanion()
     end
 end
 
+local function CheckMounts()
+    mounts = {
+        fly={size=0},
+        swim={size=0},
+        ground={size=0}
+    }
+
+    for i=1,GetNumCompanions("MOUNT") do
+        local creatureID, creatureName, creatureSpellID,
+            icon, issummoned, mountType = GetCompanionInfo("MOUNT", i)
+
+        mountSlotCache[creatureID] = i
+
+        if mountType == "flying" then
+            mounts.fly.size = mounts.fly.size + 1
+            table.insert(mounts.fly, creatureID)
+        elseif mountType == "swimming" then
+            mounts.swim.size = mounts.swim.size + 1
+            table.insert(mounts.swim, creatureID)
+        else
+            mounts.ground.size = mounts.ground.size + 1
+            table.insert(mounts.ground, creatureID)
+        end
+    end
+end
+
+local function CanFly()
+    if IsFlyableArea() then
+        name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
+        -- Need Cold Weather Flying in Northrend
+        if instanceID == 571 then
+            return IsSpellKnown(54197)
+        end
+
+        return true
+    end
+
+    return false
+end
+
+function RandomSummonMount()
+    if IsMounted() then
+        DismissCompanion("MOUNT")
+        return
+    end
+
+    if (IsSwimming() or IsSubmerged()) and mounts.swim.size > 0 then
+        CallSpecific("MOUNT", mounts.swim[random(mounts.swim.size)])
+    elseif CanFly() and mounts.fly.size > 0 then
+        CallSpecific("MOUNT", mounts.fly[random(mounts.fly.size)])
+    else
+        CallSpecific("MOUNT", mounts.ground[random(mounts.ground.size)])
+    end
+end
+
 local function RandomSummon_OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         print("Entering world:", select(1, ...), select(2, ...))
@@ -153,11 +211,13 @@ local function RandomSummon_OnEvent(self, event, ...)
 
         if select(1, ...) or select(2, ...) then
             -- Initialisation
+            CheckMounts()
         end
 
         EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata
+        CheckMounts()
         print("Companions updated:", event)
     elseif event == "UPDATE_STEALTH" and IsStealthed() then
         DismissCompanion("CRITTER")
