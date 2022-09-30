@@ -2,61 +2,6 @@ local AddonName, Addon = ...
 
 local AddonFrame = CreateFrame("Frame", AddonName)
 
-local mounts = {}
-
-local function CheckMounts()
-    local locale = GetLocale()
-    local mountDetectionStrings = Addon.mountDetectionStrings[locale]
-    if not mountDetectionStrings then
-        print("Locale", locale, "is not supported. Random mount summoning won't work.")
-        return
-    end
-
-    mounts = {
-        fly={size=0, regular={size=0}, fast={size=0}},
-        swim={size=0, regular={size=0}, fast={size=0}},
-        ground={size=0, regular={size=0}, fast={size=0}},
-        ahnqiraj={size=0, regular={size=0}, fast={size=0}}
-    }
-
-    for i=1,GetNumCompanions("MOUNT") do
-        local creatureID, creatureName, creatureSpellID,
-            icon, issummoned = GetCompanionInfo("MOUNT", i)
-
-        Addon.slotCache.mount[creatureID] = i
-
-        local spell = Spell:CreateFromSpellID(creatureSpellID)
-        spell:ContinueOnSpellLoad(function()
-            local desc = spell:GetSpellDescription()
-
-            local fast = string.find(desc, mountDetectionStrings.fast)
-            local flying = string.find(desc, mountDetectionStrings.flying)
-            local swimming = string.find(desc, mountDetectionStrings.swimming)
-            local qiraji = string.find(desc, mountDetectionStrings.qiraji)
-
-            local mountCollection
-            if qiraji then
-                mountCollection = mounts.ahnqiraj
-            elseif swimming then
-                mountCollection = mounts.swim
-            elseif flying then
-                mountCollection = mounts.fly
-            else
-                mountCollection = mounts.ground
-            end
-
-            mountCollection.size = mountCollection.size + 1
-            if fast then
-                mountCollection.fast.size = mountCollection.fast.size + 1
-                table.insert(mountCollection.fast, creatureID)
-            else
-                mountCollection.regular.size = mountCollection.regular.size + 1
-                table.insert(mountCollection.regular, creatureID)
-            end
-        end)
-    end
-end
-
 function RandomSummonMountType(mountType, speed)
     local mountCollection
     if mountType == "GROUND" then
@@ -118,14 +63,14 @@ local function RandomSummon_OnEvent(self, event, ...)
 
         if select(1, ...) or select(2, ...) then
             -- Initialisation
-            CheckMounts()
+            Addon:CheckMounts()
         end
 
         Addon:UpdateMacros()
         Addon:EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata
-        CheckMounts()
+        Addon:CheckMounts()
         print("Companions updated:", event)
     elseif event == "UPDATE_STEALTH" and IsStealthed() then
         DismissCompanion("CRITTER")
