@@ -15,5 +15,6 @@
 ## Author: Merijn Verstraaten
 ## Version: 1
 
+Core.lua
 Localisations.lua
 RandomSummon.lua
