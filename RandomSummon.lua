@@ -8,6 +8,15 @@ local petId = nil
 local mountSlotCache = {}
 local mounts = {}
 
+local mountDetectionStrings = {
+    enUS={
+        fast="This is a very fast mount.",
+        flying="This mount can only be summoned in Outland or Northrend.",
+        swimming="This mount can't move very quickly on land, but she's a great swimmer.",
+        qiraji="Temple of Ahn'Qiraj"
+    }
+}
+
 local origCallCompanion = CallCompanion
 CallCompanion = function(companionType, slotId)
     local creatureID, creatureName, creatureSpellID,
@@ -146,6 +155,12 @@ local function EnsureRandomCompanion()
 end
 
 local function CheckMounts()
+    local locale = GetLocale()
+    if not mountDetectionStrings[locale] then
+        print("Locale \"" + locale + "\" is not supported. Random mount summoning won't work.")
+        return
+    end
+
     mounts = {
         fly={size=0, regular={size=0}, fast={size=0}},
         swim={size=0, regular={size=0}, fast={size=0}},
@@ -163,13 +178,13 @@ local function CheckMounts()
         spell:ContinueOnSpellLoad(function()
             local desc = spell:GetSpellDescription()
 
-            local flying = string.find(desc, "This mount can only be summoned in Outland or Northrend.")
-            local fast = string.find(desc, "This is a very fast mount.")
-            local swimming = string.find(desc, "This mount can't move very quickly on land, but she's a great swimmer.")
-            local qiraj = string.find(desc, "Temple of Ahn'Qiraj")
+            local fast = string.find(desc, mountDetectionStrings[locale].fast)
+            local flying = string.find(desc, mountDetectionStrings[locale].flying)
+            local swimming = string.find(desc, mountDetectionStrings[locale].swimming)
+            local qiraji = string.find(desc, mountDetectionStrings[locale].qiraji)
 
             local mountCollection
-            if qiraj then
+            if qiraji then
                 mountCollection = mounts.ahnqiraj
             elseif swimming then
                 mountCollection = mounts.swim
