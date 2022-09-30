@@ -356,5 +356,4 @@ Addon:RegisterEvent("COMPANION_UPDATE")
 _, playerClass, _ = UnitClass("player")
 if playerClass == "DRUID" then
     Addon:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
-    Addon:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 end
