@@ -124,8 +124,6 @@ local function CheckBusy()
         return "CASTING"
     elseif UnitChannelInfo("player") then
         return "CHANNELING"
-    elseif IsFalling() then
-        return "FALLING"
     end
 
     local start, duration, enabled, modRate = GetSpellCooldown(61304)
@@ -259,6 +257,8 @@ function RandomSummonMount()
         DismissCompanion("MOUNT")
         UpdateMountMacroIcon()
         return
+    elseif InCombatLockdown() then
+        return
     end
 
     name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
@@ -334,7 +334,11 @@ local function RandomSummon_OnEvent(self, event, ...)
         end
     elseif event == "PLAYER_MOUNT_DISPLAY_CHANGED" then
         if not IsMounted() then
-            C_Timer.After(0.12, function() EnsureRandomCompanion() end)
+            C_Timer.After(0.12, function()
+                if not IsFalling() then
+                    EnsureRandomCompanion()
+                end
+            end)
         end
     elseif event == "UPDATE_SHAPESHIFT_FORM" then
         print(event, ...)
