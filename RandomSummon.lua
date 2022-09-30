@@ -57,20 +57,6 @@ local function CheckMounts()
     end
 end
 
-local function UpdateMountMacroIcon(creatureId)
-    if GetMacroInfo("RandomSummonMount") then
-        local creatureSpellID
-        if creatureId then
-            local slotId = Addon.slotCache.mount[creatureId]
-            _, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", slotId)
-        else
-            local num = GetNumCompanions("MOUNT")
-            _, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", random(num))
-        end
-        SetMacroSpell("RandomSummonMount", GetSpellInfo(creatureSpellID))
-    end
-end
-
 function RandomSummonMountType(mountType, speed)
     local mountCollection
     if mountType == "GROUND" then
@@ -101,14 +87,14 @@ function RandomSummonMountType(mountType, speed)
 
     if creatureId then
         Addon:CallSpecific("MOUNT", creatureId)
-        UpdateMountMacroIcon(creatureId)
+        Addon:UpdateMountMacroIcon(creatureId)
     end
 end
 
 function RandomSummonMount()
     if IsMounted() then
         DismissCompanion("MOUNT")
-        UpdateMountMacroIcon()
+        Addon:UpdateMountMacroIcon()
         return
     elseif InCombatLockdown() then
         return
@@ -126,31 +112,6 @@ function RandomSummonMount()
     end
 end
 
-local macroFlyable = "#showtooltip\n/cast [swimming] Aquatic Form; [flyable,nocombat] !Swift Flight Form; !Travel Form"
-local macroUnflyable = "#showtooltip\n/cast [swimming] Aquatic Form; !Travel Form"
-local macroMount = "#showtooltip\n/cancelform [nocombat,form:1/2/3/4]\n/run RandomSummonMount()"
-local function UpdateMacros()
-    _, playerClass, _ = UnitClass("player")
-    if playerClass == "DRUID" and not InCombatLockdown() then
-        if not GetMacroInfo("RandomSummonTravelForm") then
-            if Addon:CanFly() then
-                CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
-            else
-                CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
-            end
-        elseif Addon:CanFly() then
-            EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
-        else
-            EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
-        end
-    end
-
-    if not GetMacroInfo("RandomSummonMount") and not InCombatLockdown() then
-        CreateMacro("RandomSummonMount", "INV_MISC_QUESTIONMARK", macroMount)
-    end
-    UpdateMountMacroIcon()
-end
-
 local function RandomSummon_OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         local active = Addon:CheckActivePet()
@@ -160,7 +121,7 @@ local function RandomSummon_OnEvent(self, event, ...)
             CheckMounts()
         end
 
-        UpdateMacros()
+        Addon:UpdateMacros()
         Addon:EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata
@@ -180,6 +141,10 @@ local function RandomSummon_OnEvent(self, event, ...)
                 end
             end)
         end
+    elseif event == "LEARNED_SPELL_IN_TAB" then
+        -- Only fires for druids, rerun macro code in case we learned a new
+        -- travel form
+        Addon:RegenDruidMacroStrings()
     elseif event == "UPDATE_SHAPESHIFT_FORM" then
         print(event, ...)
     else
@@ -200,4 +165,5 @@ AddonFrame:RegisterEvent("COMPANION_UPDATE")
 _, playerClass, _ = UnitClass("player")
 if playerClass == "DRUID" then
     AddonFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+    AddonFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
 end
