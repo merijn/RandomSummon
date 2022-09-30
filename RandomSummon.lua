@@ -1,21 +1,12 @@
-local AddonName = ...
+local AddonName, Addon = ...
 
-local Addon = CreateFrame("Frame", AddonName)
+local AddonFrame = CreateFrame("Frame", AddonName)
 
 local petSlotCache = {}
 local petId = nil
 
 local mountSlotCache = {}
 local mounts = {}
-
-local mountDetectionStrings = {
-    enUS={
-        fast="This is a very fast mount.",
-        flying="This mount can only be summoned in Outland or Northrend.",
-        swimming="This mount can't move very quickly on land, but she's a great swimmer.",
-        qiraji="Temple of Ahn'Qiraj"
-    }
-}
 
 local origCallCompanion = CallCompanion
 CallCompanion = function(companionType, slotId)
@@ -154,8 +145,9 @@ end
 
 local function CheckMounts()
     local locale = GetLocale()
-    if not mountDetectionStrings[locale] then
-        print("Locale \"" + locale + "\" is not supported. Random mount summoning won't work.")
+    local mountDetectionStrings = Addon.mountDetectionStrings[locale]
+    if not mountDetectionStrings then
+        print("Locale", locale, "is not supported. Random mount summoning won't work.")
         return
     end
 
@@ -176,10 +168,10 @@ local function CheckMounts()
         spell:ContinueOnSpellLoad(function()
             local desc = spell:GetSpellDescription()
 
-            local fast = string.find(desc, mountDetectionStrings[locale].fast)
-            local flying = string.find(desc, mountDetectionStrings[locale].flying)
-            local swimming = string.find(desc, mountDetectionStrings[locale].swimming)
-            local qiraji = string.find(desc, mountDetectionStrings[locale].qiraji)
+            local fast = string.find(desc, mountDetectionStrings.fast)
+            local flying = string.find(desc, mountDetectionStrings.flying)
+            local swimming = string.find(desc, mountDetectionStrings.swimming)
+            local qiraji = string.find(desc, mountDetectionStrings.qiraji)
 
             local mountCollection
             if qiraji then
@@ -216,6 +208,20 @@ local function CanFly()
     end
 
     return false
+end
+
+local function UpdateMountMacroIcon(creatureId)
+    if GetMacroInfo("RandomSummonMount") then
+        local creatureSpellID
+        if creatureId then
+            local slotId = mountSlotCache[creatureId]
+            _, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", slotId)
+        else
+            local num = GetNumCompanions("MOUNT")
+            _, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", random(num))
+        end
+        SetMacroSpell("RandomSummonMount", GetSpellInfo(creatureSpellID))
+    end
 end
 
 function RandomSummonMountType(mountType, speed)
@@ -270,19 +276,6 @@ function RandomSummonMount()
         RandomSummonMountType("FLY", "FAST")
     else
         RandomSummonMountType("GROUND", "FAST")
-    end
-end
-
-local function UpdateMountMacroIcon(creatureId)
-    if GetMacroInfo("RandomSummonMount") then
-        if creatureId then
-            local slotId = mountSlotCache[creatureId]
-            local _, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", slotId)
-        else
-            local num = GetNumCompanions("MOUNT")
-            local _, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", random(num))
-        end
-        SetMacroSpell("RandomSummonMount", creatureSpellID)
     end
 end
 
@@ -347,17 +340,17 @@ local function RandomSummon_OnEvent(self, event, ...)
     end
 end
 
-Addon:SetScript("OnEvent", RandomSummon_OnEvent)
-Addon:RegisterEvent("PLAYER_ENTERING_WORLD")
-Addon:RegisterEvent("COMPANION_LEARNED")
-Addon:RegisterEvent("COMPANION_UNLEARNED")
-Addon:RegisterEvent("UPDATE_STEALTH")
-Addon:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
-Addon:RegisterEvent("PLAYER_REGEN_ENABLED")
-Addon:RegisterEvent("PLAYER_ALIVE")
-Addon:RegisterEvent("PLAYER_UNGHOST")
-Addon:RegisterEvent("COMPANION_UPDATE")
+AddonFrame:SetScript("OnEvent", RandomSummon_OnEvent)
+AddonFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+AddonFrame:RegisterEvent("COMPANION_LEARNED")
+AddonFrame:RegisterEvent("COMPANION_UNLEARNED")
+AddonFrame:RegisterEvent("UPDATE_STEALTH")
+AddonFrame:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
+AddonFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+AddonFrame:RegisterEvent("PLAYER_ALIVE")
+AddonFrame:RegisterEvent("PLAYER_UNGHOST")
+AddonFrame:RegisterEvent("COMPANION_UPDATE")
 _, playerClass, _ = UnitClass("player")
 if playerClass == "DRUID" then
-    Addon:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+    AddonFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 end
