@@ -62,3 +62,17 @@ function Addon:CallSpecific(companionType, creatureId)
 
     origCallCompanion(companionType, slotId)
 end
+
+function Addon:CanFly()
+    if IsFlyableArea() then
+        name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
+        -- Need Cold Weather Flying in Northrend
+        if instanceID == 571 then
+            return IsSpellKnown(54197)
+        end
+
+        return true
+    end
+
+    return false
+end

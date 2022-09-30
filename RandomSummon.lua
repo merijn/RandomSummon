@@ -57,20 +57,6 @@ local function CheckMounts()
     end
 end
 
-local function CanFly()
-    if IsFlyableArea() then
-        name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
-        -- Need Cold Weather Flying in Northrend
-        if instanceID == 571 then
-            return IsSpellKnown(54197)
-        end
-
-        return true
-    end
-
-    return false
-end
-
 local function UpdateMountMacroIcon(creatureId)
     if GetMacroInfo("RandomSummonMount") then
         local creatureSpellID
@@ -133,7 +119,7 @@ function RandomSummonMount()
         RandomSummonMountType("QIRAJI", "FAST")
     elseif (IsSwimming() or IsSubmerged()) and mounts.swim.size > 0 then
         RandomSummonMountType("SWIM", "FAST")
-    elseif CanFly() and mounts.fly.size > 0 then
+    elseif Addon:CanFly() and mounts.fly.size > 0 then
         RandomSummonMountType("FLY", "FAST")
     else
         RandomSummonMountType("GROUND", "FAST")
@@ -147,12 +133,12 @@ local function UpdateMacros()
     _, playerClass, _ = UnitClass("player")
     if playerClass == "DRUID" and not InCombatLockdown() then
         if not GetMacroInfo("RandomSummonTravelForm") then
-            if CanFly() then
+            if Addon:CanFly() then
                 CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
             else
                 CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
             end
-        elseif CanFly() then
+        elseif Addon:CanFly() then
             EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
         else
             EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
