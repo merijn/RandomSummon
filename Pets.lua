@@ -1,6 +1,6 @@
-local AddonName, Addon = ...
+local AddonName, RandomSummon = ...
 
-local slotCache = Addon.slotCache.pet
+local slotCache = RandomSummon.slotCache.pet
 
 local function SummonRandom()
     local num = GetNumCompanions("CRITTER")
@@ -24,17 +24,17 @@ local function CheckBusy()
     return "IDLE"
 end
 
-function Addon:CheckActivePet()
-    if Addon.petId then
+function RandomSummon:CheckActivePet()
+    if RandomSummon.petId then
         local creatureID, _, _, _, issummoned
-              = GetCompanionInfo("CRITTER", slotCache[Addon.petId])
+              = GetCompanionInfo("CRITTER", slotCache[RandomSummon.petId])
 
-        if creatureID == Addon.petId and issummoned then return true end
+        if creatureID == RandomSummon.petId and issummoned then return true end
     end
 
     local activeFound = false
-    local oldPetId = Addon.petId
-    Addon.petId = nil
+    local oldPetId = RandomSummon.petId
+    RandomSummon.petId = nil
     for i=1,GetNumCompanions("CRITTER") do
         local creatureID, creatureName, _, _, issummoned
               = GetCompanionInfo("CRITTER", i)
@@ -43,7 +43,7 @@ function Addon:CheckActivePet()
 
         if issummoned then
             activeFound = true
-            Addon.petId = creatureID
+            RandomSummon.petId = creatureID
             if oldPetId == creatureID then
                 print("Slot changed for", creatureName)
             else
@@ -54,7 +54,7 @@ function Addon:CheckActivePet()
     return activeFound
 end
 
-function Addon:EnsureRandomCompanion()
+function RandomSummon:EnsureRandomCompanion()
     if IsStealthed() or IsMounted() or InCombatLockdown() or UnitIsDeadOrGhost("player") then
         -- Don't break stealth, dismount, or trigger GCD in combat
         return
@@ -67,7 +67,7 @@ function Addon:EnsureRandomCompanion()
         print("Busy channeling!")
     elseif activity == "GCD" then
         print("Busy GCD!")
-    elseif not Addon:CheckActivePet() then
+    elseif not RandomSummon:CheckActivePet() then
         SummonRandom()
     end
 end

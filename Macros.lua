@@ -1,10 +1,10 @@
-local AddonName, Addon = ...
+local AddonName, RandomSummon = ...
 
-function Addon:UpdateMountMacroIcon(creatureId)
+function RandomSummon:UpdateMountMacroIcon(creatureId)
     if GetMacroInfo("RandomSummonMount") then
         local spellID
         if creatureId then
-            local slotId = Addon.slotCache.mount[creatureId]
+            local slotId = RandomSummon.slotCache.mount[creatureId]
             _, _, spellID, _, _ = GetCompanionInfo("MOUNT", slotId)
         else
             local num = GetNumCompanions("MOUNT")
@@ -25,7 +25,7 @@ local swiftFlightForm = GetSpellInfo(swiftFlightFormId)
 
 local flyableMacro, unflyableMacro
 
-function Addon:RegenDruidMacroStrings()
+function RandomSummon:RegenDruidMacroStrings()
     flyableMacro = "#showtooltip\n/cast "
     unflyableMacro = "#showtooltip\n/cast "
     if IsSpellKnown(aquaFormId) then
@@ -48,7 +48,7 @@ function Addon:RegenDruidMacroStrings()
 end
 
 -- Immediately initalise macro strings
-Addon:RegenDruidMacroStrings()
+RandomSummon:RegenDruidMacroStrings()
 
 local mountMacro = [[
 #showtooltip
@@ -56,23 +56,23 @@ local mountMacro = [[
 /run RandomSummonMount()
 ]]
 
-function Addon:UpdateMacros()
+function RandomSummon:UpdateMacros()
     if not GetMacroInfo("RandomSummonMount") and not InCombatLockdown() then
         CreateMacro("RandomSummonMount", "INV_MISC_QUESTIONMARK", mountMacro)
     end
-    Addon:UpdateMountMacroIcon()
+    RandomSummon:UpdateMountMacroIcon()
 
     _, playerClass, _ = UnitClass("player")
     if playerClass == "DRUID" and not InCombatLockdown() then
         if not GetMacroInfo("RandomSummonTravelForm") then
-            if Addon:CanFly() then
+            if RandomSummon:CanFly() then
                 CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK",
                             flyableMacro, true)
             else
                 CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK",
                             unflyableMacro, true)
             end
-        elseif Addon:CanFly() then
+        elseif RandomSummon:CanFly() then
             EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm",
                       "INV_MISC_QUESTIONMARK", flyableMacro, true)
         else

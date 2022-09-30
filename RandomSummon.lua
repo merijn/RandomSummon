@@ -1,17 +1,17 @@
-local AddonName, Addon = ...
+local AddonName, RandomSummon = ...
 
 local AddonFrame = CreateFrame("Frame", AddonName)
 
 function RandomSummonMountType(mountType, speed)
     local mountCollection
     if mountType == "GROUND" then
-        mountCollection = Addon.mounts.ground
+        mountCollection = RandomSummon.mounts.ground
     elseif mountType == "FLY" then
-        mountCollection = Addon.mounts.fly
+        mountCollection = RandomSummon.mounts.fly
     elseif mountType == "QIRAJI" then
-        mountCollection = Addon.mounts.ahnqiraj
+        mountCollection = RandomSummon.mounts.ahnqiraj
     elseif mountType == "SWIM" then
-        mountCollection = Addon.mounts.swim
+        mountCollection = RandomSummon.mounts.swim
     else
         error("Unsupported mount type!")
     end
@@ -32,27 +32,27 @@ function RandomSummonMountType(mountType, speed)
     end
 
     if creatureId then
-        Addon:CallSpecific("MOUNT", creatureId)
-        Addon:UpdateMountMacroIcon(creatureId)
+        RandomSummon:CallSpecific("MOUNT", creatureId)
+        RandomSummon:UpdateMountMacroIcon(creatureId)
     end
 end
 
 function RandomSummonMount()
     if IsMounted() then
         DismissCompanion("MOUNT")
-        Addon:UpdateMountMacroIcon()
+        RandomSummon:UpdateMountMacroIcon()
         return
     elseif InCombatLockdown() then
         return
     end
 
-    local mounts = Addon.mounts
+    local mounts = RandomSummon.mounts
     local name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
     if instanceID == 509 or instanceID == 531 and mounts.ahnqiraj.size > 0 then
         RandomSummonMountType("QIRAJI", "FAST")
     elseif (IsSwimming() or IsSubmerged()) and mounts.swim.size > 0 then
         RandomSummonMountType("SWIM", "FAST")
-    elseif Addon:CanFly() and mounts.fly.size > 0 then
+    elseif RandomSummon:CanFly() and mounts.fly.size > 0 then
         RandomSummonMountType("FLY", "FAST")
     else
         RandomSummonMountType("GROUND", "FAST")
@@ -61,41 +61,41 @@ end
 
 local function RandomSummon_OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
-        local active = Addon:CheckActivePet()
+        local active = RandomSummon:CheckActivePet()
 
         if select(1, ...) or select(2, ...) then
             -- Initialisation
-            Addon:CheckMounts()
+            RandomSummon:CheckMounts()
         end
 
-        Addon:UpdateMacros()
-        Addon:EnsureRandomCompanion()
+        RandomSummon:UpdateMacros()
+        RandomSummon:EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata
-        Addon:CheckMounts()
+        RandomSummon:CheckMounts()
         print("Companions updated:", event)
     elseif event == "UPDATE_STEALTH" and IsStealthed() then
         DismissCompanion("CRITTER")
     elseif event == "COMPANION_UPDATE" then
         if select(1, ...) == "CRITTER" then
-            Addon:CheckActivePet()
+            RandomSummon:CheckActivePet()
         end
     elseif event == "PLAYER_MOUNT_DISPLAY_CHANGED" then
         if not IsMounted() then
             C_Timer.After(0.12, function()
                 if not IsFalling() then
-                    Addon:EnsureRandomCompanion()
+                    RandomSummon:EnsureRandomCompanion()
                 end
             end)
         end
     elseif event == "LEARNED_SPELL_IN_TAB" then
         -- Only fires for druids, rerun macro code in case we learned a new
         -- travel form
-        Addon:RegenDruidMacroStrings()
+        RandomSummon:RegenDruidMacroStrings()
     elseif event == "UPDATE_SHAPESHIFT_FORM" then
         print(event, ...)
     else
-        Addon:EnsureRandomCompanion()
+        RandomSummon:EnsureRandomCompanion()
     end
 end
 

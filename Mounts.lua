@@ -1,15 +1,15 @@
-local AddonName, Addon = ...
+local AddonName, RandomSummon = ...
 
-Addon.mounts = {}
-local slotCache = Addon.slotCache.mount
-local mountDetectionStrings = Addon.mountDetectionStrings[GetLocale()]
+RandomSummon.mounts = {}
+local slotCache = RandomSummon.slotCache.mount
+local mountDetectionStrings = RandomSummon.mountDetectionStrings[GetLocale()]
 
 if not mountDetectionStrings then
     print("Locale", GetLocale(), "is not supported. Random mount summoning won't work.")
 end
 
-function Addon:CheckMounts()
-    Addon.mounts = {
+function RandomSummon:CheckMounts()
+    RandomSummon.mounts = {
         fly={size=0, regular={size=0}, fast={size=0}},
         swim={size=0, regular={size=0}, fast={size=0}},
         ground={size=0, regular={size=0}, fast={size=0}},
@@ -32,13 +32,13 @@ function Addon:CheckMounts()
 
             local mountCollection
             if qiraji then
-                mountCollection = Addon.mounts.ahnqiraj
+                mountCollection = RandomSummon.mounts.ahnqiraj
             elseif swimming then
-                mountCollection = Addon.mounts.swim
+                mountCollection = RandomSummon.mounts.swim
             elseif flying then
-                mountCollection = Addon.mounts.fly
+                mountCollection = RandomSummon.mounts.fly
             else
-                mountCollection = Addon.mounts.ground
+                mountCollection = RandomSummon.mounts.ground
             end
 
             mountCollection.size = mountCollection.size + 1

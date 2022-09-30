@@ -1,6 +1,6 @@
-local AddonName, Addon = ...
+local AddonName, RandomSummon = ...
 
-Addon.mountDetectionStrings = {
+RandomSummon.mountDetectionStrings = {
     enUS={
         fast="This is a very fast mount.",
         flying="This mount can only be summoned in Outland or Northrend.",

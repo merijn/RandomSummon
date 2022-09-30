@@ -1,18 +1,18 @@
-local AddonName, Addon = ...
+local AddonName, RandomSummon = ...
 
-Addon.petId = nil
-Addon.slotCache = { pet={}, mount={} }
+RandomSummon.petId = nil
+RandomSummon.slotCache = { pet={}, mount={} }
 
 local origCallCompanion = CallCompanion
 CallCompanion = function(companionType, slotId)
     local creatureID, creatureName, _, _, _ = GetCompanionInfo(companionType, slotId)
 
     if companionType == "CRITTER" then
-        Addon.petId = creatureID
-        Addon.slotCache.pet[creatureID] = slotId
+        RandomSummon.petId = creatureID
+        RandomSummon.slotCache.pet[creatureID] = slotId
         print("Summoning: ", creatureName)
     elseif companionType == "MOUNT" then
-        Addon.slotCache.mount[creatureID] = slotId
+        RandomSummon.slotCache.mount[creatureID] = slotId
     else
         error("CallCompanion received unknown companion type")
     end
@@ -22,18 +22,18 @@ end
 
 local origDismissCompanion = DismissCompanion
 DismissCompanion = function(companionType)
-    if companionType == "CRITTER" then Addon.petId = nil end
+    if companionType == "CRITTER" then RandomSummon.petId = nil end
 
     origDismissCompanion(companionType)
 end
 
-function Addon:CallSpecific(companionType, creatureId)
+function RandomSummon:CallSpecific(companionType, creatureId)
     local slotCache
     if companionType == "CRITTER" then
-        Addon.petId = creatureId
-        slotCache = Addon.slotCache.pet
+        RandomSummon.petId = creatureId
+        slotCache = RandomSummon.slotCache.pet
     elseif companionType == "MOUNT" then
-        slotCache = Addon.slotCache.mount
+        slotCache = RandomSummon.slotCache.mount
     else
         error("CallSpecific received unknown companion type")
     end
@@ -63,7 +63,7 @@ function Addon:CallSpecific(companionType, creatureId)
     origCallCompanion(companionType, slotId)
 end
 
-function Addon:CanFly()
+function RandomSummon:CanFly()
     if IsFlyableArea() then
         name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
         -- Need Cold Weather Flying in Northrend
