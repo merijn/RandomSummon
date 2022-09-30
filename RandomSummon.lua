@@ -219,26 +219,30 @@ function RandomSummonMountType(mountType, speed)
         error("Unsupported mount type!")
     end
 
+    local creatureId
     if speed == "ANY" and mountCollection.size > 0 then
         num = random(mountCollection.size)
         if num <= mountCollection.regular.size then
-            CallSpecific("MOUNT", mountCollection.regular[num])
+            creatureId = mountCollection.regular[num]
         else
-            num = num - mountCollection.regular.size
-            CallSpecific("MOUNT", mountCollection.fast[num])
+            creatureId = mountCollection.fast[num - mountCollection.regular.size]
         end
     elseif speed == "FAST" and mountCollection.fast.size > 0 then
-        num = random(mountCollection.fast.size)
-        CallSpecific("MOUNT", mountCollection.fast[num])
+        creatureId = mountCollection.fast[random(mountCollection.fast.size)]
     elseif mountCollection.regular.size > 0 then
-        num = random(mountCollection.regular.size)
-        CallSpecific("MOUNT", mountCollection.regular[num])
+        creatureId = mountCollection.fast[random(mountCollection.regular.size)]
+    end
+
+    if creatureId then
+        CallSpecific("MOUNT", creatureId)
+        UpdateMountMacroIcon(creatureId)
     end
 end
 
 function RandomSummonMount()
     if IsMounted() then
         DismissCompanion("MOUNT")
+        UpdateMountMacroIcon()
         return
     end
 
@@ -254,20 +258,42 @@ function RandomSummonMount()
     end
 end
 
+local function UpdateMountMacroIcon(creatureId)
+    if GetMacroInfo("RandomSummonMount") then
+        if creatureId then
+            local slotId = mountSlotCache[creatureId]
+            local _, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", slotId)
+        else
+            local num = GetNumCompanions("MOUNT")
+            local _, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", random(num))
+        end
+        SetMacroSpell("RandomSummonMount", creatureSpellID)
+    end
+end
+
 local macroFlyable = "#showtooltip\n/cast [swimming] Aquatic Form; [flyable,nocombat] !Swift Flight Form; !Travel Form"
 local macroUnflyable = "#showtooltip\n/cast [swimming] Aquatic Form; !Travel Form"
-local function UpdateDruidMacro()
-    if not GetMacroInfo("RandomSummonForm") then
-        if CanFly() then
-            CreateMacro("RandomSummonForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
+local macroMount = "#showtooltip\n/cancelform [nocombat,form:1/2/3/4]\n/run RandomSummonMount()"
+local function UpdateMacros()
+    _, playerClass, _ = UnitClass("player")
+    if playerClass == "DRUID" and not InCombatLockdown() then
+        if not GetMacroInfo("RandomSummonTravelForm") then
+            if CanFly() then
+                CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
+            else
+                CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
+            end
+        elseif CanFly() then
+            EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
         else
-            CreateMacro("RandomSummonForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
+            EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
         end
-    elseif CanFly() then
-        EditMacro("RandomSummonForm", "RandomSummonForm", "INV_MISC_QUESTIONMARK", macroFlyable, true)
-    else
-        EditMacro("RandomSummonForm", "RandomSummonForm", "INV_MISC_QUESTIONMARK", macroUnflyable, true)
     end
+
+    if not GetMacroInfo("RandomSummonMount") and not InCombatLockdown() then
+        CreateMacro("RandomSummonMount", "INV_MISC_QUESTIONMARK", macroMount)
+    end
+    UpdateMountMacroIcon()
 end
 
 local function RandomSummon_OnEvent(self, event, ...)
@@ -279,10 +305,7 @@ local function RandomSummon_OnEvent(self, event, ...)
             CheckMounts()
         end
 
-        _, playerClass, _ = UnitClass("player")
-        if playerClass == "DRUID" and not InCombatLockdown() then
-            UpdateDruidMacro()
-        end
+        UpdateMacros()
         EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata
