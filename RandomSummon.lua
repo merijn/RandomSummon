@@ -5,13 +5,13 @@ local AddonFrame = CreateFrame("Frame", AddonName)
 function RandomSummonMountType(mountType, speed)
     local mountCollection
     if mountType == "GROUND" then
-        mountCollection = mounts.ground
+        mountCollection = Addon.mounts.ground
     elseif mountType == "FLY" then
-        mountCollection = mounts.fly
+        mountCollection = Addon.mounts.fly
     elseif mountType == "QIRAJI" then
-        mountCollection = mounts.ahnqiraj
+        mountCollection = Addon.mounts.ahnqiraj
     elseif mountType == "SWIM" then
-        mountCollection = mounts.swim
+        mountCollection = Addon.mounts.swim
     else
         error("Unsupported mount type!")
     end
@@ -22,7 +22,8 @@ function RandomSummonMountType(mountType, speed)
         if num <= mountCollection.regular.size then
             creatureId = mountCollection.regular[num]
         else
-            creatureId = mountCollection.fast[num - mountCollection.regular.size]
+            num = num - mountCollection.regular.size
+            creatureId = mountCollection.fast[num]
         end
     elseif speed == "FAST" and mountCollection.fast.size > 0 then
         creatureId = mountCollection.fast[random(mountCollection.fast.size)]
@@ -45,7 +46,8 @@ function RandomSummonMount()
         return
     end
 
-    name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
+    local mounts = Addon.mounts
+    local name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
     if instanceID == 509 or instanceID == 531 and mounts.ahnqiraj.size > 0 then
         RandomSummonMountType("QIRAJI", "FAST")
     elseif (IsSwimming() or IsSubmerged()) and mounts.swim.size > 0 then

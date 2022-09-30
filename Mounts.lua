@@ -1,6 +1,6 @@
 local AddonName, Addon = ...
 
-local mounts = {}
+Addon.mounts = {}
 local slotCache = Addon.slotCache.mount
 local mountDetectionStrings = Addon.mountDetectionStrings[GetLocale()]
 
@@ -9,7 +9,7 @@ if not mountDetectionStrings then
 end
 
 function Addon:CheckMounts()
-    mounts = {
+    Addon.mounts = {
         fly={size=0, regular={size=0}, fast={size=0}},
         swim={size=0, regular={size=0}, fast={size=0}},
         ground={size=0, regular={size=0}, fast={size=0}},
@@ -32,13 +32,13 @@ function Addon:CheckMounts()
 
             local mountCollection
             if qiraji then
-                mountCollection = mounts.ahnqiraj
+                mountCollection = Addon.mounts.ahnqiraj
             elseif swimming then
-                mountCollection = mounts.swim
+                mountCollection = Addon.mounts.swim
             elseif flying then
-                mountCollection = mounts.fly
+                mountCollection = Addon.mounts.fly
             else
-                mountCollection = mounts.ground
+                mountCollection = Addon.mounts.ground
             end
 
             mountCollection.size = mountCollection.size + 1
