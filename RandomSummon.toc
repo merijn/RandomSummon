@@ -17,4 +17,5 @@
 
 Core.lua
 Localisations.lua
+Pets.lua
 RandomSummon.lua

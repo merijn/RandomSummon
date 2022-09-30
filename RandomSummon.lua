@@ -4,76 +4,6 @@ local AddonFrame = CreateFrame("Frame", AddonName)
 
 local mounts = {}
 
-local function SummonRandom()
-    local num = GetNumCompanions("CRITTER")
-    if num > 0 then
-        CallCompanion("CRITTER", random(num))
-    end
-end
-
-local function CheckActivePet()
-    if Addon.petId then
-        local creatureID, creatureName, creatureSpellID, icon, issummoned
-              = GetCompanionInfo("CRITTER", Addon.slotCache.pet[Addon.petId])
-
-        if creatureID == Addon.petId and issummoned then return true end
-    end
-
-    local activeFound = false
-    local oldPetId = Addon.petId
-    Addon.petId = nil
-    for i=1,GetNumCompanions("CRITTER") do
-        local creatureID, creatureName, creatureSpellID,
-            icon, issummoned = GetCompanionInfo("CRITTER", i)
-
-        Addon.slotCache.pet[creatureID] = i
-
-        if issummoned then
-            activeFound = true
-            Addon.petId = creatureID
-            if oldPetId == creatureID then
-                print("Slot changed for", creatureName)
-            else
-                print("Active pet changed to", creatureName)
-            end
-        end
-    end
-    return activeFound
-end
-
-local function CheckBusy()
-    if UnitCastingInfo("player") then
-        return "CASTING"
-    elseif UnitChannelInfo("player") then
-        return "CHANNELING"
-    end
-
-    local start, duration, enabled, modRate = GetSpellCooldown(61304)
-    if start ~= 0 then
-        return "GCD"
-    end
-
-    return "IDLE"
-end
-
-local function EnsureRandomCompanion()
-    if IsStealthed() or IsMounted() or InCombatLockdown() or UnitIsDeadOrGhost("player") then
-        -- Don't break stealth, dismount, or trigger GCD in combat
-        return
-    end
-
-    local activity = CheckBusy()
-    if activity == "CASTING" then
-        print("Busy casting!")
-    elseif activity == "CHANNELING" then
-        print("Busy channeling!")
-    elseif activity == "GCD" then
-        print("Busy GCD!")
-    elseif not CheckActivePet() then
-        SummonRandom()
-    end
-end
-
 local function CheckMounts()
     local locale = GetLocale()
     local mountDetectionStrings = Addon.mountDetectionStrings[locale]
@@ -237,7 +167,7 @@ end
 
 local function RandomSummon_OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
-        local active = CheckActivePet()
+        local active = Addon:CheckActivePet()
 
         if select(1, ...) or select(2, ...) then
             -- Initialisation
@@ -245,7 +175,7 @@ local function RandomSummon_OnEvent(self, event, ...)
         end
 
         UpdateMacros()
-        EnsureRandomCompanion()
+        Addon:EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata
         CheckMounts()
@@ -254,20 +184,20 @@ local function RandomSummon_OnEvent(self, event, ...)
         DismissCompanion("CRITTER")
     elseif event == "COMPANION_UPDATE" then
         if select(1, ...) == "CRITTER" then
-            CheckActivePet()
+            Addon:CheckActivePet()
         end
     elseif event == "PLAYER_MOUNT_DISPLAY_CHANGED" then
         if not IsMounted() then
             C_Timer.After(0.12, function()
                 if not IsFalling() then
-                    EnsureRandomCompanion()
+                    Addon:EnsureRandomCompanion()
                 end
             end)
         end
     elseif event == "UPDATE_SHAPESHIFT_FORM" then
         print(event, ...)
     else
-        EnsureRandomCompanion()
+        Addon:EnsureRandomCompanion()
     end
 end
 
