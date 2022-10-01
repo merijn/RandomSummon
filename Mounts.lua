@@ -8,6 +8,29 @@ if not mountDetectionStrings then
     print("Locale", GetLocale(), "is not supported. Random mount summoning won't work.")
 end
 
+function RandomSummon:UpdateMountMacroIcon(creatureId)
+    if GetMacroInfo("RandomSummonMount") then
+        local spellID
+        if creatureId then
+            local slotId = RandomSummon.slotCache.mount[creatureId]
+            _, _, spellID, _, _ = GetCompanionInfo("MOUNT", slotId)
+        else
+            local num = GetNumCompanions("MOUNT")
+            _, _, spellID, _, _ = GetCompanionInfo("MOUNT", random(num))
+        end
+        SetMacroSpell("RandomSummonMount", GetSpellInfo(spellID))
+    end
+end
+
+if not GetMacroInfo("RandomSummonMount") and not InCombatLockdown() then
+    CreateMacro("RandomSummonMount", "INV_MISC_QUESTIONMARK", [[
+#showtooltip
+/cancelform [nocombat,form:1/2/3/4]
+/run RandomSummonMount()
+]])
+end
+RandomSummon:UpdateMountMacroIcon()
+
 function RandomSummon:CheckMounts()
     RandomSummon.mounts = {
         fly={size=0, regular={size=0}, fast={size=0}},
