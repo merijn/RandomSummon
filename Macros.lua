@@ -14,42 +14,6 @@ function RandomSummon:UpdateMountMacroIcon(creatureId)
     end
 end
 
-local aquaFormId = 1066
-local travelFormId = 783
-local flightFormId = 33943
-local swiftFlightFormId = 40120
-local aquaForm = GetSpellInfo(aquaFormId)
-local travelForm = GetSpellInfo(travelFormId)
-local flightForm = GetSpellInfo(flightFormId)
-local swiftFlightForm = GetSpellInfo(swiftFlightFormId)
-
-local flyableMacro, unflyableMacro
-
-function RandomSummon:RegenDruidMacroStrings()
-    flyableMacro = "#showtooltip\n/cast "
-    unflyableMacro = "#showtooltip\n/cast "
-    if IsSpellKnown(aquaFormId) then
-        local s = "[swimming] !" .. aquaForm .. "; "
-        flyableMacro = flyableMacro .. s
-        unflyableMacro = unflyableMacro .. s
-    end
-    if IsSpellKnown(swiftFlightFormId) then
-        local s = "[flyable,nocombat] !" .. swiftFlightForm .. "; "
-        flyableMacro = flyableMacro .. s
-    elseif IsSpellKnown(flightFormId) then
-        local s = "[flyable,nocombat] !" .. flightForm .. "; "
-        flyableMacro = flyableMacro .. s
-    end
-    if IsSpellKnown(travelFormId) then
-        local s = "!" .. travelForm
-        flyableMacro = flyableMacro .. s
-        unflyableMacro = unflyableMacro .. s
-    end
-end
-
--- Immediately initalise macro strings
-RandomSummon:RegenDruidMacroStrings()
-
 local mountMacro = [[
 #showtooltip
 /cancelform [nocombat,form:1/2/3/4]
@@ -62,22 +26,23 @@ function RandomSummon:UpdateMacros()
     end
     RandomSummon:UpdateMountMacroIcon()
 
-    _, playerClass, _ = UnitClass("player")
-    if playerClass == "DRUID" and not InCombatLockdown() then
+    if RandomSummon.druid and not InCombatLockdown() then
         if not GetMacroInfo("RandomSummonTravelForm") then
             if RandomSummon:CanFly() then
                 CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK",
-                            flyableMacro, true)
+                            RandomSummon.druid.flyableMacro, true)
             else
                 CreateMacro("RandomSummonTravelForm", "INV_MISC_QUESTIONMARK",
-                            unflyableMacro, true)
+                            RandomSummon.druid.unflyableMacro, true)
             end
         elseif RandomSummon:CanFly() then
             EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm",
-                      "INV_MISC_QUESTIONMARK", flyableMacro, true)
+                      "INV_MISC_QUESTIONMARK",
+                      RandomSummon.druid.flyableMacro, true)
         else
             EditMacro("RandomSummonTravelForm", "RandomSummonTravelForm",
-                      "INV_MISC_QUESTIONMARK", unflyableMacro, true)
+                      "INV_MISC_QUESTIONMARK",
+                      RandomSummon.druid.unflyableMacro, true)
         end
     end
 end

@@ -88,12 +88,9 @@ local function RandomSummon_OnEvent(self, event, ...)
                 end
             end)
         end
-    elseif event == "LEARNED_SPELL_IN_TAB" then
-        -- Only fires for druids, rerun macro code in case we learned a new
-        -- travel form
+    elseif event == "LEARNED_SPELL_IN_TAB" and RandomSummon.druid then
         RandomSummon:RegenDruidMacroStrings()
-    elseif event == "UPDATE_SHAPESHIFT_FORM" then
-        print(event, ...)
+    elseif event == "UPDATE_SHAPESHIFT_FORM" and RandomSummon.druid then
     else
         RandomSummon:EnsureRandomCompanion()
     end
@@ -109,8 +106,7 @@ AddonFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 AddonFrame:RegisterEvent("PLAYER_ALIVE")
 AddonFrame:RegisterEvent("PLAYER_UNGHOST")
 AddonFrame:RegisterEvent("COMPANION_UPDATE")
-_, playerClass, _ = UnitClass("player")
-if playerClass == "DRUID" then
+if RandomSummon.druid then
     AddonFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
     AddonFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
 end

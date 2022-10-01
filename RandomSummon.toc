@@ -16,6 +16,7 @@
 ## Version: 1
 
 Core.lua
+Druid.lua
 Localisations.lua
 Pets.lua
 Macros.lua
