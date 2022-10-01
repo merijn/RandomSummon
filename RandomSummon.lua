@@ -66,6 +66,9 @@ local function RandomSummon_OnEvent(self, event, ...)
         if select(1, ...) or select(2, ...) then
             -- Initialisation
             RandomSummon:CheckMounts()
+            if RandomSummon.druid then
+                RandomSummon:RegenDruidMacroStrings()
+            end
         end
 
         RandomSummon:UpdateMacros()

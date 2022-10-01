@@ -56,6 +56,4 @@ if playerClass == "DRUID" then
         RandomSummon.druid.flyableMacro = flyableMacro
         RandomSummon.druid.unflyableMacro = unflyableMacro
     end
-
-    RandomSummon:RegenDruidMacroStrings()
 end
