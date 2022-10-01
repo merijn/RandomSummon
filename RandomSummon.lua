@@ -71,7 +71,7 @@ local function RandomSummon_OnEvent(self, event, ...)
             end
         end
 
-        RandomSummon:UpdateMacros()
+        RandomSummon:UpdateMountMacroIcon()
         RandomSummon:EnsureRandomCompanion()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         -- rebuild metadata

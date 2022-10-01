@@ -22,16 +22,15 @@ function RandomSummon:UpdateMountMacroIcon(creatureId)
     end
 end
 
-if not GetMacroInfo("RandomSummonMount") and not InCombatLockdown() then
-    CreateMacro("RandomSummonMount", "INV_MISC_QUESTIONMARK", [[
+function RandomSummon:CheckMounts()
+    if not GetMacroInfo("RandomSummonMount") and not InCombatLockdown() then
+        CreateMacro("RandomSummonMount", "INV_MISC_QUESTIONMARK", [[
 #showtooltip
 /cancelform [nocombat,form:1/2/3/4]
 /run RandomSummonMount()
 ]])
-end
-RandomSummon:UpdateMountMacroIcon()
+    end
 
-function RandomSummon:CheckMounts()
     RandomSummon.mounts = {
         fly={size=0, regular={size=0}, fast={size=0}},
         swim={size=0, regular={size=0}, fast={size=0}},
