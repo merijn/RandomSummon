@@ -62,11 +62,11 @@ function RandomSummon:EnsureRandomCompanion()
 
     local activity = CheckBusy()
     if activity == "CASTING" then
-        print("Busy casting!")
+        --print("Busy casting!")
     elseif activity == "CHANNELING" then
-        print("Busy channeling!")
+        --print("Busy channeling!")
     elseif activity == "GCD" then
-        print("Busy GCD!")
+        --print("Busy GCD!")
     elseif not RandomSummon:CheckActivePet() then
         SummonRandom()
     end
