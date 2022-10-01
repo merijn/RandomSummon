@@ -9,6 +9,9 @@ if not mountDetectionStrings then
 end
 
 function RandomSummon:UpdateMountMacroIcon(creatureId)
+    if GetNumCompanions("MOUNT") == 0 then
+        return
+    end
     if GetMacroInfo("RandomSummonMount") then
         local spellID
         if creatureId then
