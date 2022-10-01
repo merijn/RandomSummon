@@ -66,9 +66,6 @@ local function RandomSummon_OnEvent(self, event, ...)
         if select(1, ...) or select(2, ...) then
             -- Initialisation
             RandomSummon:CheckMounts()
-            if RandomSummon.druid then
-                RandomSummon:RegenDruidMacroStrings()
-            end
         end
 
         RandomSummon:UpdateMountMacroIcon()
@@ -91,9 +88,6 @@ local function RandomSummon_OnEvent(self, event, ...)
                 end
             end)
         end
-    elseif event == "LEARNED_SPELL_IN_TAB" and RandomSummon.druid then
-        RandomSummon:RegenDruidMacroStrings()
-    elseif event == "UPDATE_SHAPESHIFT_FORM" and RandomSummon.druid then
     else
         RandomSummon:EnsureRandomCompanion()
     end
@@ -109,7 +103,3 @@ AddonFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 AddonFrame:RegisterEvent("PLAYER_ALIVE")
 AddonFrame:RegisterEvent("PLAYER_UNGHOST")
 AddonFrame:RegisterEvent("COMPANION_UPDATE")
-if RandomSummon.druid then
-    AddonFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
-    AddonFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
-end
