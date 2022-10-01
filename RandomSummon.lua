@@ -28,7 +28,7 @@ function RandomSummonMountType(mountType, speed)
     elseif speed == "FAST" and mountCollection.fast.size > 0 then
         creatureId = mountCollection.fast[random(mountCollection.fast.size)]
     elseif mountCollection.regular.size > 0 then
-        creatureId = mountCollection.fast[random(mountCollection.regular.size)]
+        creatureId = mountCollection.regular[random(mountCollection.regular.size)]
     end
 
     if creatureId then
