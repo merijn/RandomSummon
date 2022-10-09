@@ -15,9 +15,9 @@
 ## Author: Merijn Verstraaten
 ## Version: 1
 
+Localisations.lua
 Core.lua
 Druid.lua
-Localisations.lua
 Pets.lua
 Mounts.lua
 RandomSummon.lua

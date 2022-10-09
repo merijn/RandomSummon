@@ -8,3 +8,10 @@ RandomSummon.mountDetectionStrings = {
         qiraji="Temple of Ahn'Qiraj"
     }
 }
+
+RandomSummon.zoneStrings = {
+    enUS={
+        dalaran="Dalaran",
+        krasus="Krasus' Landing"
+    }
+}

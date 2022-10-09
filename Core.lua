@@ -63,12 +63,19 @@ function RandomSummon:CallSpecific(companionType, creatureId)
     origCallCompanion(companionType, slotId)
 end
 
+local zoneStrings = RandomSummon.zoneStrings[GetLocale()]
+
 function RandomSummon:CanFly()
     if IsFlyableArea() then
         name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
         -- Need Cold Weather Flying in Northrend
         if instanceID == 571 then
-            return IsSpellKnown(54197)
+            -- Can't fly in Dalaran, except Krasus' Landing
+            if not IsSpellKnown(54197) then
+                return false
+            elseif GetZoneText() == zoneStrings.dalaran then
+                return (GetSubZoneText() == zoneStrings.krasus)
+            end
         end
 
         return true
