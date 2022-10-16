@@ -25,6 +25,32 @@ function RandomSummon:UpdateMountMacroIcon(creatureId)
     end
 end
 
+local function UpdateMount(creatureID, fast, flying, swimming, qiraji)
+    local mountCollection
+    if qiraji then
+        mountCollection = RandomSummon.mounts.ahnqiraj
+    elseif swimming then
+        mountCollection = RandomSummon.mounts.swim
+    elseif flying then
+        mountCollection = RandomSummon.mounts.fly
+    else
+        mountCollection = RandomSummon.mounts.ground
+    end
+
+    mountCollection.size = mountCollection.size + 1
+    if fast then
+        mountCollection.fast.size = mountCollection.fast.size + 1
+        table.insert(mountCollection.fast, creatureID)
+    else
+        mountCollection.regular.size = mountCollection.regular.size + 1
+        table.insert(mountCollection.regular, creatureID)
+    end
+end
+
+local uniqueMounts = {
+    [24654]={true, true, false, false}
+}
+
 function RandomSummon:CheckMounts()
     if not GetMacroInfo("RandomSummonMount") and not InCombatLockdown() then
         CreateMacro("RandomSummonMount", "INV_MISC_QUESTIONMARK", [[
@@ -42,38 +68,24 @@ function RandomSummon:CheckMounts()
     }
 
     for i=1,GetNumCompanions("MOUNT") do
-        local creatureID, _, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", i)
+        local creatureID, name, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", i)
 
         slotCache[creatureID] = i
 
-        local spell = Spell:CreateFromSpellID(creatureSpellID)
-        spell:ContinueOnSpellLoad(function()
-            local desc = spell:GetSpellDescription()
+        if uniqueMounts[creatureID] then
+            UpdateMount(creatureID, unpack(uniqueMounts[creatureID]))
+        else
+            local spell = Spell:CreateFromSpellID(creatureSpellID)
+            spell:ContinueOnSpellLoad(function()
+                local desc = spell:GetSpellDescription()
 
-            local fast = string.find(desc, mountDetectionStrings.fast)
-            local flying = string.find(desc, mountDetectionStrings.flying)
-            local swimming = string.find(desc, mountDetectionStrings.swimming)
-            local qiraji = string.find(desc, mountDetectionStrings.qiraji)
+                local fast = string.find(desc, mountDetectionStrings.fast)
+                local flying = string.find(desc, mountDetectionStrings.flying)
+                local swimming = string.find(desc, mountDetectionStrings.swimming)
+                local qiraji = string.find(desc, mountDetectionStrings.qiraji)
 
-            local mountCollection
-            if qiraji then
-                mountCollection = RandomSummon.mounts.ahnqiraj
-            elseif swimming then
-                mountCollection = RandomSummon.mounts.swim
-            elseif flying then
-                mountCollection = RandomSummon.mounts.fly
-            else
-                mountCollection = RandomSummon.mounts.ground
-            end
-
-            mountCollection.size = mountCollection.size + 1
-            if fast then
-                mountCollection.fast.size = mountCollection.fast.size + 1
-                table.insert(mountCollection.fast, creatureID)
-            else
-                mountCollection.regular.size = mountCollection.regular.size + 1
-                table.insert(mountCollection.regular, creatureID)
-            end
-        end)
+                UpdateMount(creatureID, fast, flying, swimming, qiraji)
+            end)
+        end
     end
 end
