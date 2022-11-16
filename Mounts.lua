@@ -48,6 +48,7 @@ local function UpdateMount(creatureID, fast, flying, swimming, qiraji)
 end
 
 local uniqueMounts = {
+    -- creatureID = { fast, flying, swimming, qiraji }
     [24654]={true, true, false, false}
 }
 
