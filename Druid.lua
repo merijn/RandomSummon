@@ -78,6 +78,8 @@ local function RegenDruidMacroStrings()
     end
 end
 
+local zoneStrings = RandomSummon.zoneStrings[GetLocale()]
+
 local function RandomSummonDruid_OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         aquaForm = GetSpellInfo(aquaFormId)
@@ -94,7 +96,18 @@ local function RandomSummonDruid_OnEvent(self, event, ...)
         self:UnregisterEvent("PLAYER_REGEN_ENABLED")
     elseif event == "LEARNED_SPELL_IN_TAB" then
         RegenDruidMacroStrings()
+    elseif event == "ZONE_CHANGED" then
+        if GetZoneText() ~= zoneStrings.dalaran then
+            DruidFrame:UnregisterEvent("ZONE_CHANGED")
+        else
+            UpdateMacro()
+        end
     elseif event == "ZONE_CHANGED_NEW_AREA" then
+        if GetZoneText() == zoneStrings.dalaran then
+            DruidFrame:RegisterEvent("ZONE_CHANGED")
+        else
+            DruidFrame:UnregisterEvent("ZONE_CHANGED")
+        end
         C_Timer.After(0, function() UpdateMacro() end)
     elseif event == "UPDATE_SHAPESHIFT_FORM" then
         local activeForm = CurrentForm()
@@ -114,5 +127,8 @@ end
 DruidFrame:SetScript("OnEvent", RandomSummonDruid_OnEvent)
 DruidFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 DruidFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+if GetZoneText() == zoneStrings.dalaran then
+    DruidFrame:RegisterEvent("ZONE_CHANGED")
+end
 DruidFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 DruidFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
