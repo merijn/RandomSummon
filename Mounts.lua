@@ -50,7 +50,8 @@ end
 local uniqueMounts = {
     -- creatureID = { fast, flying, swimming, qiraji }
     [24654]={true, true, false, false},
-    [33029]={false, true, false, false}
+    [33029]={false, true, false, false},
+    [33030]={true, true, false, false}
 }
 
 function RandomSummon:CheckMounts()
