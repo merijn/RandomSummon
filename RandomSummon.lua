@@ -66,6 +66,8 @@ local function RandomSummon_OnEvent(self, event, ...)
         RandomSummon:CheckMounts()
     elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         print("Companions updated:", event)
+        -- rebuild metadata
+        RandomSummon:CheckMounts()
     elseif event == "UPDATE_STEALTH" and IsStealthed() then
         DismissCompanion("CRITTER")
     elseif event == "COMPANION_UPDATE" then
@@ -96,3 +98,4 @@ AddonFrame:RegisterEvent("PLAYER_ALIVE")
 AddonFrame:RegisterEvent("PLAYER_UNGHOST")
 AddonFrame:RegisterEvent("COMPANION_UPDATE")
 AddonFrame:RegisterEvent("NEW_MOUNT_ADDED")
+AddonFrame:RegisterEvent("NEW_PET_ADDED")
