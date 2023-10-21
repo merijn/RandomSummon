@@ -1,22 +1,15 @@
 local AddonName, RandomSummon = ...
 
 RandomSummon.mounts = {}
-local slotCache = RandomSummon.slotCache.mount
-local mountDetectionStrings = RandomSummon.mountDetectionStrings[GetLocale()]
 
-if not mountDetectionStrings then
-    print("Locale", GetLocale(), "is not supported. Random mount summoning won't work.")
-end
-
-function RandomSummon:UpdateMountMacroIcon(creatureId)
+function RandomSummon:UpdateMountMacroIcon(mountID)
     if GetNumCompanions("MOUNT") == 0 then
         return
     end
     if GetMacroInfo("RandomSummonMount") then
         local spellID
-        if creatureId then
-            local slotId = RandomSummon.slotCache.mount[creatureId]
-            _, _, spellID, _, _ = GetCompanionInfo("MOUNT", slotId)
+        if mountID then
+            local _, spellID, _, _, _, _, _, _, _, _, _, _ = C_MountJournal.GetMountInfoByID(mountID)
         else
             local num = GetNumCompanions("MOUNT")
             _, _, spellID, _, _ = GetCompanionInfo("MOUNT", random(num))
@@ -25,34 +18,23 @@ function RandomSummon:UpdateMountMacroIcon(creatureId)
     end
 end
 
-local function UpdateMount(creatureID, fast, flying, swimming, qiraji)
+local function UpdateMount(mountID, mountTypeID)
     local mountCollection
-    if qiraji then
+    if mountTypeID == 241 then
         mountCollection = RandomSummon.mounts.ahnqiraj
-    elseif swimming then
+    elseif mountTypeID == 231 then
         mountCollection = RandomSummon.mounts.swim
-    elseif flying then
+    elseif mountTypeID == 248 then
         mountCollection = RandomSummon.mounts.fly
-    else
+    elseif mountTypeID == 230 then
         mountCollection = RandomSummon.mounts.ground
+    else
+        error("Unsupported mount type: " .. mountTypeID .. "!")
     end
 
     mountCollection.size = mountCollection.size + 1
-    if fast then
-        mountCollection.fast.size = mountCollection.fast.size + 1
-        table.insert(mountCollection.fast, creatureID)
-    else
-        mountCollection.regular.size = mountCollection.regular.size + 1
-        table.insert(mountCollection.regular, creatureID)
-    end
+    table.insert(mountCollection, mountID)
 end
-
-local uniqueMounts = {
-    -- creatureID = { fast, flying, swimming, qiraji }
-    [24654]={true, true, false, false},
-    [33029]={false, true, false, false},
-    [33030]={true, true, false, false}
-}
 
 function RandomSummon:CheckMounts()
     if not GetMacroInfo("RandomSummonMount") and not InCombatLockdown() then
@@ -64,31 +46,20 @@ function RandomSummon:CheckMounts()
     end
 
     RandomSummon.mounts = {
-        fly={size=0, regular={size=0}, fast={size=0}},
-        swim={size=0, regular={size=0}, fast={size=0}},
-        ground={size=0, regular={size=0}, fast={size=0}},
-        ahnqiraj={size=0, regular={size=0}, fast={size=0}}
+        fly={size=0},
+        swim={size=0},
+        ground={size=0},
+        ahnqiraj={size=0},
     }
 
-    for i=1,GetNumCompanions("MOUNT") do
-        local creatureID, name, creatureSpellID, _, _ = GetCompanionInfo("MOUNT", i)
+    for _, mountID in ipairs(C_MountJournal.GetMountIDs()) do
+        local name, spellID, _, _, isUsable, _, isFavorite, _, _, _,
+                isCollected, _ = C_MountJournal.GetMountInfoByID(mountID)
 
-        slotCache[creatureID] = i
+        if isCollected then
+            local _, _, _, _, mountTypeID, _, _, _, _ = C_MountJournal.GetMountInfoExtraByID(mountID)
 
-        if uniqueMounts[creatureID] then
-            UpdateMount(creatureID, unpack(uniqueMounts[creatureID]))
-        else
-            local spell = Spell:CreateFromSpellID(creatureSpellID)
-            spell:ContinueOnSpellLoad(function()
-                local desc = spell:GetSpellDescription()
-
-                local fast = string.find(desc, mountDetectionStrings.fast)
-                local flying = string.find(desc, mountDetectionStrings.flying)
-                local swimming = string.find(desc, mountDetectionStrings.swimming)
-                local qiraji = string.find(desc, mountDetectionStrings.qiraji)
-
-                UpdateMount(creatureID, fast, flying, swimming, qiraji)
-            end)
+            UpdateMount(mountID, mountTypeID)
         end
     end
 end

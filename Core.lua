@@ -1,7 +1,7 @@
 local AddonName, RandomSummon = ...
 
 RandomSummon.petId = nil
-RandomSummon.slotCache = { pet={}, mount={} }
+RandomSummon.slotCache = { pet={} }
 
 local origCallCompanion = CallCompanion
 CallCompanion = function(companionType, slotId)

@@ -2,7 +2,7 @@ local AddonName, RandomSummon = ...
 
 local AddonFrame = CreateFrame("Frame", AddonName)
 
-function RandomSummonMountType(mountType, speed)
+function RandomSummonMountType(mountType)
     local mountCollection
     if mountType == "GROUND" then
         mountCollection = RandomSummon.mounts.ground
@@ -16,24 +16,15 @@ function RandomSummonMountType(mountType, speed)
         error("Unsupported mount type!")
     end
 
-    local creatureId
-    if speed == "ANY" and mountCollection.size > 0 then
+    local mountId
+    if mountCollection.size > 0 then
         num = random(mountCollection.size)
-        if num <= mountCollection.regular.size then
-            creatureId = mountCollection.regular[num]
-        else
-            num = num - mountCollection.regular.size
-            creatureId = mountCollection.fast[num]
-        end
-    elseif speed == "FAST" and mountCollection.fast.size > 0 then
-        creatureId = mountCollection.fast[random(mountCollection.fast.size)]
-    elseif mountCollection.regular.size > 0 then
-        creatureId = mountCollection.regular[random(mountCollection.regular.size)]
+        mountId = mountCollection[num]
     end
 
-    if creatureId then
-        RandomSummon:CallSpecific("MOUNT", creatureId)
-        RandomSummon:UpdateMountMacroIcon(creatureId)
+    if mountId then
+        C_MountJournal.SummonByID(mountId)
+        RandomSummon:UpdateMountMacroIcon(mountId)
     end
 end
 
@@ -49,13 +40,13 @@ function RandomSummonMount()
     local mounts = RandomSummon.mounts
     local name, _, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
     if instanceID == 509 or instanceID == 531 and mounts.ahnqiraj.size > 0 then
-        RandomSummonMountType("QIRAJI", "FAST")
+        RandomSummonMountType("QIRAJI")
     elseif (IsSwimming() or IsSubmerged()) and mounts.swim.size > 0 then
-        RandomSummonMountType("SWIM", "FAST")
+        RandomSummonMountType("SWIM")
     elseif RandomSummon:CanFly() and mounts.fly.size > 0 then
-        RandomSummonMountType("FLY", "FAST")
+        RandomSummonMountType("FLY")
     else
-        RandomSummonMountType("GROUND", "FAST")
+        RandomSummonMountType("GROUND")
     end
 end
 
@@ -70,9 +61,10 @@ local function RandomSummon_OnEvent(self, event, ...)
 
         RandomSummon:UpdateMountMacroIcon()
         RandomSummon:EnsureRandomCompanion()
-    elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
+    elseif event == "NEW_MOUNT_ADDED" then
         -- rebuild metadata
         RandomSummon:CheckMounts()
+    elseif event == "COMPANION_LEARNED" or event == "COMPANION_UNLEARNED" then
         print("Companions updated:", event)
     elseif event == "UPDATE_STEALTH" and IsStealthed() then
         DismissCompanion("CRITTER")
@@ -103,3 +95,4 @@ AddonFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 AddonFrame:RegisterEvent("PLAYER_ALIVE")
 AddonFrame:RegisterEvent("PLAYER_UNGHOST")
 AddonFrame:RegisterEvent("COMPANION_UPDATE")
+AddonFrame:RegisterEvent("NEW_MOUNT_ADDED")
