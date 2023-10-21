@@ -10,7 +10,9 @@ local function SummonRandom()
 end
 
 local function CheckBusy()
-    if UnitCastingInfo("player") then
+    if UnitUsingVehicle("player") then
+        return "VEHICLE"
+    elseif UnitCastingInfo("player") then
         return "CASTING"
     elseif UnitChannelInfo("player") then
         return "CHANNELING"
@@ -61,7 +63,9 @@ function RandomSummon:EnsureRandomCompanion()
     end
 
     local activity = CheckBusy()
-    if activity == "CASTING" then
+    if activity == "VEHICLE" then
+        -- Can't summon while driving
+    elseif activity == "CASTING" then
         --print("Busy casting!")
     elseif activity == "CHANNELING" then
         --print("Busy channeling!")
