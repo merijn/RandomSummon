@@ -52,11 +52,24 @@ function RandomSummon:CheckMounts()
         ahnqiraj={size=0},
     }
 
-    for _, mountID in ipairs(C_MountJournal.GetMountIDs()) do
-        local name, spellID, _, _, isUsable, _, isFavorite, _, _, _,
-                isCollected, _ = C_MountJournal.GetMountInfoByID(mountID)
+    playerFaction, _ = UnitFactionGroup("player")
 
-        if isCollected then
+    for _, mountID in ipairs(C_MountJournal.GetMountIDs()) do
+        local name, spellID, _, _, isUsable, _, isFavorite, isFactionSpecific,
+                faction, _, isCollected, _ = C_MountJournal.GetMountInfoByID(mountID)
+
+        local validForPlayer = false
+        if isFactionSpecific then
+            if faction == 0 and playerFaction == "Horde" then
+                validForPlayer = true
+            elseif faction == 1 and playerFaction == "Alliance" then
+                validForPlayer = true
+            end
+        else
+            validForPlayer = true
+        end
+
+        if isCollected and validForPlayer then
             local _, _, _, _, mountTypeID, _, _, _, _ = C_MountJournal.GetMountInfoExtraByID(mountID)
 
             UpdateMount(mountID, mountTypeID)
